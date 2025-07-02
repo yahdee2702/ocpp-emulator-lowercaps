@@ -103,7 +103,7 @@ class ChargePointDAO(
         ): ChargePointDAO {
             return ChargePointDAO.new {
                 this.name = name
-                this.identity = identity.trim().uppercase()
+                this.identity = identity.trim()
                 //
                 this.operationMode = ChargePointMode.Manual
                 this.ocppVersion = OcppVersion.V16
