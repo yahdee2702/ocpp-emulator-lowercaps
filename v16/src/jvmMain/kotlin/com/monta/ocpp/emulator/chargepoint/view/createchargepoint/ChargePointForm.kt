@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.monta.ocpp.emulator.chargepoint.entity.ChargePointDAO
 import com.monta.ocpp.emulator.chargepoint.entity.ChargePointTable
+import com.monta.ocpp.emulator.chargepoint.model.MeterType
 import com.monta.ocpp.emulator.chargepoint.model.OcppVersion
 import com.monta.ocpp.emulator.chargepoint.service.ChargePointService
 import com.monta.ocpp.emulator.common.components.FormInput
@@ -45,7 +46,7 @@ import org.koin.core.annotation.Factory
 @Composable
 fun ChargePointForm(
     viewModel: ChargePointFormViewModel,
-    chargePoint: ChargePointDAO?
+    chargePoint: ChargePointDAO?,
 ) {
     chargePoint?.let {
         if (!viewModel.initialized) {
@@ -58,29 +59,29 @@ fun ChargePointForm(
     Box(
         modifier = Modifier.fillMaxSize()
             .verticalScroll(
-                state = rememberScrollState()
-            )
+                state = rememberScrollState(),
+            ),
     ) {
         Card(
             modifier = getCardStyle()
                 .align(Alignment.Center)
                 .padding(
                     top = 32.dp,
-                    bottom = 32.dp
+                    bottom = 32.dp,
                 ),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(20.dp),
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
                     .width(400.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+                verticalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 Text(
                     text = (if (viewModel.isUpdating) "Edit" else "Create") + " Charge Point",
                     style = MaterialTheme.typography.h5,
                     modifier = Modifier.padding(8.dp)
                         .align(Alignment.Start)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
                 )
                 FormInput(
                     modifier = Modifier.fillMaxWidth(),
@@ -88,10 +89,10 @@ fun ChargePointForm(
                     value = viewModel.form.chargePointName,
                     onValueChange = { newValue ->
                         viewModel.form = viewModel.form.copy(
-                            chargePointName = newValue
+                            chargePointName = newValue,
                         )
                     },
-                    helperText = "Name used for identifying the charge point locally in the app, not largely important mostly for your convenience"
+                    helperText = "Name used for identifying the charge point locally in the app, not largely important mostly for your convenience",
                 )
                 FormInput(
                     modifier = Modifier.fillMaxWidth(),
@@ -99,14 +100,14 @@ fun ChargePointForm(
                     value = viewModel.form.chargePointIdentity,
                     onValueChange = { newValue ->
                         viewModel.form = viewModel.form.copy(
-                            chargePointIdentity = newValue
+                            chargePointIdentity = newValue,
                         )
                         viewModel.validateForm()
                     },
                     enabled = !viewModel.isUpdating,
                     isError = viewModel.formErrors.contains("identity"),
                     helperText = viewModel.formErrors.getOrDefault("identity", null)
-                        ?: "The identity used for connecting to the OCPP server, cannot be empty or contain spaces, and must be unique"
+                        ?: "The identity used for connecting to the OCPP server, cannot be empty or contain spaces, and must be unique",
                 )
                 Spinner(
                     modifier = Modifier.fillMaxWidth(),
@@ -115,12 +116,12 @@ fun ChargePointForm(
                     values = UrlChoice.entries,
                     render = { urlChoice ->
                         urlChoice.name
-                    }
+                    },
                 ) { newUrlChoice ->
                     viewModel.form = viewModel.form.copy(
                         urlChoice = newUrlChoice,
                         ocppUrl = newUrlChoice.ocppUrl,
-                        apiUrl = newUrlChoice.apiUrl
+                        apiUrl = newUrlChoice.apiUrl,
                     )
                 }
                 FormInput(
@@ -129,23 +130,23 @@ fun ChargePointForm(
                     value = viewModel.form.ocppUrl,
                     onValueChange = { newValue ->
                         viewModel.form = viewModel.form.copy(
-                            ocppUrl = newValue
+                            ocppUrl = newValue,
                         )
                     },
-                    enabled = viewModel.form.urlChoice == UrlChoice.Other
+                    enabled = viewModel.form.urlChoice == UrlChoice.Other,
                 )
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = "Connectors",
                         style = MaterialTheme.typography.subtitle1,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
                     )
                     MontaIcon(
                         iconName = "help",
-                        tooltipText = "Allows you to select how many connectors this charge point will be configured with"
+                        tooltipText = "Allows you to select how many connectors this charge point will be configured with",
                     )
                 }
 
@@ -155,13 +156,13 @@ fun ChargePointForm(
                             .weight(1f)
                             .padding(end = 4.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = getButtonStateColor(viewModel.form.connectorCount == 1)
+                            backgroundColor = getButtonStateColor(viewModel.form.connectorCount == 1),
                         ),
                         onClick = {
                             viewModel.form = viewModel.form.copy(
-                                connectorCount = 1
+                                connectorCount = 1,
                             )
-                        }
+                        },
                     ) {
                         Text("1")
                     }
@@ -170,13 +171,13 @@ fun ChargePointForm(
                             .weight(1f)
                             .padding(start = 4.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = getButtonStateColor(viewModel.form.connectorCount == 2)
+                            backgroundColor = getButtonStateColor(viewModel.form.connectorCount == 2),
                         ),
                         onClick = {
                             viewModel.form = viewModel.form.copy(
-                                connectorCount = 2
+                                connectorCount = 2,
                             )
-                        }
+                        },
                     ) {
                         Text("2")
                     }
@@ -187,10 +188,10 @@ fun ChargePointForm(
                     checked = viewModel.form.showAdvanceSettings,
                     onCheckedChange = {
                         viewModel.form = viewModel.form.copy(
-                            showAdvanceSettings = it
+                            showAdvanceSettings = it,
                         )
                     },
-                    label = "Show Advanced Settings"
+                    label = "Show Advanced Settings",
                 )
 
                 if (viewModel.form.showAdvanceSettings) {
@@ -200,9 +201,9 @@ fun ChargePointForm(
                         value = viewModel.form.apiUrl,
                         onValueChange = { newValue ->
                             viewModel.form = viewModel.form.copy(
-                                apiUrl = newValue
+                                apiUrl = newValue,
                             )
-                        }
+                        },
                     )
                     PasswordField(
                         modifier = Modifier.fillMaxWidth(),
@@ -210,14 +211,14 @@ fun ChargePointForm(
                         passwordVisibility = viewModel.form.passwordVisibility,
                         passwordListener = { newValue ->
                             viewModel.form = viewModel.form.copy(
-                                password = newValue
+                                password = newValue,
                             )
                         },
                         passwordVisibilityListener = { newValue ->
                             viewModel.form = viewModel.form.copy(
-                                passwordVisibility = newValue
+                                passwordVisibility = newValue,
                             )
-                        }
+                        },
                     )
                     Spinner(
                         modifier = Modifier.fillMaxWidth(),
@@ -227,9 +228,9 @@ fun ChargePointForm(
                         render = { "$it kW" },
                         onSelectionChanged = { newMaxKw ->
                             viewModel.form = viewModel.form.copy(
-                                maxKw = newMaxKw.toDouble()
+                                maxKw = newMaxKw.toDouble(),
                             )
-                        }
+                        },
                     )
                     Spinner(
                         modifier = Modifier.fillMaxWidth(),
@@ -238,10 +239,10 @@ fun ChargePointForm(
                         values = OcppVersion.entries,
                         render = { ocppVersionChoice ->
                             ocppVersionChoice.version
-                        }
+                        },
                     ) { newOcppChoice ->
                         viewModel.form = viewModel.form.copy(
-                            ocppVersion = newOcppChoice
+                            ocppVersion = newOcppChoice,
                         )
                     }
                     FormInput(
@@ -250,17 +251,28 @@ fun ChargePointForm(
                         value = viewModel.form.firmware,
                         onValueChange = { newValue ->
                             viewModel.form = viewModel.form.copy(
-                                firmware = newValue
+                                firmware = newValue,
                             )
-                        }
+                        },
                     )
+                    Spinner(
+                        modifier = Modifier.fillMaxWidth(),
+                        label = "Meter Type",
+                        value = viewModel.form.meterType,
+                        values = MeterType.entries,
+                        render = { it.displayName },
+                    ) { newMeterType ->
+                        viewModel.form = viewModel.form.copy(
+                            meterType = newMeterType,
+                        )
+                    }
                 }
                 Button(
                     enabled = viewModel.formErrors.isEmpty(),
                     modifier = Modifier.align(Alignment.Start),
                     onClick = {
                         connect(viewModel)
-                    }
+                    },
                 ) {
                     if (viewModel.isUpdating) {
                         Text("Save")
@@ -274,7 +286,7 @@ fun ChargePointForm(
 }
 
 private fun connect(
-    viewModel: ChargePointFormViewModel
+    viewModel: ChargePointFormViewModel,
 ) {
     val navigationViewModel: NavigationViewModel by injectAnywhere()
     val chargePointService: ChargePointService by injectAnywhere()
@@ -291,11 +303,12 @@ private fun connect(
         apiUrl = viewModel.form.apiUrl,
         firmware = viewModel.form.firmware,
         maxKw = viewModel.form.maxKw,
-        connectorCount = viewModel.form.connectorCount
+        connectorCount = viewModel.form.connectorCount,
+        meterType = viewModel.form.meterType,
     )
 
     navigationViewModel.navigateTo(
-        screen = NavigationViewModel.Screen.ChargePoints
+        screen = NavigationViewModel.Screen.ChargePoints,
     )
 }
 
@@ -322,7 +335,8 @@ class ChargePointFormViewModel {
         if (form.chargePointIdentity.isBlank()) {
             formErrors["identity"] = "Cannot be blank or empty"
             hasErrors = true
-        } else if (!isUpdating && transaction {
+        } else if (!isUpdating &&
+            transaction {
                 ChargePointDAO.count(
                     ChargePointTable.identity eq form.chargePointIdentity.trim()
                 ) != 0L
@@ -354,9 +368,12 @@ class ChargePointFormViewModel {
         var showAdvanceSettings: Boolean = false,
         var firmware: String = "1.0.0",
         var maxKw: Double = 22.0,
-        var ocppVersion: OcppVersion = OcppVersion.V16
+        var ocppVersion: OcppVersion = OcppVersion.V16,
+        var meterType: MeterType = MeterType.OCPP,
     ) {
-        fun updateFromDAO(chargePoint: ChargePointDAO) {
+        fun updateFromDAO(
+            chargePoint: ChargePointDAO,
+        ) {
             this.chargePointName = chargePoint.name
             this.chargePointIdentity = chargePoint.identity
             this.password = chargePoint.basicAuthPassword ?: this.password
@@ -369,6 +386,7 @@ class ChargePointFormViewModel {
             this.firmware = chargePoint.firmware
             this.maxKw = chargePoint.maxKw
             this.ocppVersion = chargePoint.ocppVersion
+            this.meterType = chargePoint.meterType
         }
     }
 

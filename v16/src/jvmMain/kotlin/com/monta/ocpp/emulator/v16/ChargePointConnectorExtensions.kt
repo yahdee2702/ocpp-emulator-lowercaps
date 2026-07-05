@@ -5,6 +5,7 @@ import com.monta.library.ocpp.v16.core.ChargePointErrorCode
 import com.monta.library.ocpp.v16.core.ChargePointStatus
 import com.monta.library.ocpp.v16.core.Reason
 import com.monta.library.ocpp.v16.core.StartTransactionConfirmation
+import com.monta.ocpp.emulator.chargepoint.model.MeterType
 import com.monta.ocpp.emulator.chargepointconnector.entity.ChargePointConnectorDAO
 import com.monta.ocpp.emulator.chargepointconnector.model.CarState
 import com.monta.ocpp.emulator.chargepointtransaction.service.ChargePointTransactionService
@@ -18,11 +19,11 @@ import java.time.Instant
 private val logger = KotlinLogging.logger {}
 
 suspend fun ChargePointConnectorDAO.setStatuses(
-    vararg statuses: ChargePointStatus
+    vararg statuses: ChargePointStatus,
 ) {
     for (status in statuses) {
         setStatus(
-            status = status
+            status = status,
         )
         delay(300)
     }
@@ -34,7 +35,7 @@ suspend fun ChargePointConnectorDAO.setStatus(
     vendorId: String? = null,
     vendorErrorCode: String? = null,
     info: String? = null,
-    forceUpdate: Boolean = false
+    forceUpdate: Boolean = false,
 ) {
     if (!forceUpdate && this.status == status) {
         // Don't publish the same state
@@ -57,7 +58,7 @@ suspend fun ChargePointConnectorDAO.setStatus(
         errorCode = errorCode,
         vendorId = vendorId,
         vendorErrorCode = vendorErrorCode,
-        info = info
+        info = info,
     )
 
     GlobalLogger.info(this, "Status set to $status")
@@ -88,14 +89,14 @@ suspend fun ChargePointConnectorDAO.startFreeCharging() {
 }
 
 suspend fun ChargePointConnectorDAO.start(
-    idTag: String
+    idTag: String,
 ) {
     GlobalLogger.info(this, "Attempting to start charge")
 
     val confirmation = startTransaction(
         sessionInfo = sessionInfo,
         connector = this,
-        idTag = idTag
+        idTag = idTag,
     )
 
     when (confirmation.idTagInfo.status) {
@@ -106,11 +107,11 @@ suspend fun ChargePointConnectorDAO.start(
         AuthorizationStatus.Blocked,
         AuthorizationStatus.Expired,
         AuthorizationStatus.Invalid,
-        AuthorizationStatus.ConcurrentTx
+        AuthorizationStatus.ConcurrentTx,
         -> {
             GlobalLogger.warn(
                 this,
-                "Unable to start charge reason=${confirmation.idTagInfo.status}"
+                "Unable to start charge reason=${confirmation.idTagInfo.status}",
             )
         }
     }
@@ -118,7 +119,7 @@ suspend fun ChargePointConnectorDAO.start(
 
 private suspend fun ChargePointConnectorDAO.onStartSuccess(
     idTag: String,
-    confirmation: StartTransactionConfirmation
+    confirmation: StartTransactionConfirmation,
 ) {
     try {
         GlobalLogger.info(this, "Charge started")
@@ -129,7 +130,7 @@ private suspend fun ChargePointConnectorDAO.onStartSuccess(
             chargePoint = getChargePoint(),
             chargePointConnector = this,
             externalId = confirmation.transactionId,
-            idTag = idTag
+            idTag = idTag,
         )
 
         transaction {
@@ -150,16 +151,22 @@ private suspend fun ChargePointConnectorDAO.onStartSuccess(
         setStatuses(
             ChargePointStatus.Preparing,
             // The last notification sent should be calculated on the connector state
-            calculateState()
+            calculateState(),
         )
+        if (getChargePoint().meterType == MeterType.OcppHighPrecision) {
+            sendHighPrecisionMeterStart(
+                sessionInfo = this.sessionInfo,
+                transaction = chargePointTransaction,
+            )
+        }
     } catch (exception: Exception) {
-        logger.warn("Failed to start charge", exception)
+        logger.warn(exception) { "Failed to start charge" }
     }
 }
 
 suspend fun ChargePointConnectorDAO.stopActiveTransactions(
     reason: Reason?,
-    endReasonDescription: String? = null
+    endReasonDescription: String? = null,
 ) {
     if (activeTransactions.isEmpty()) {
         logger.warn { "no active transaction found" }
@@ -174,7 +181,7 @@ suspend fun ChargePointConnectorDAO.stopActiveTransactions(
 }
 
 suspend fun ChargePointConnectorDAO.setConnectorCarState(
-    carState: CarState
+    carState: CarState,
 ) {
     transaction {
         this@setConnectorCarState.carState = carState
@@ -184,7 +191,7 @@ suspend fun ChargePointConnectorDAO.setConnectorCarState(
 }
 
 suspend fun ChargePointConnectorDAO.setMaxVehicleRate(
-    amps: Double
+    amps: Double,
 ) {
     transaction {
         this@setMaxVehicleRate.vehicleMaxAmpsPerPhase = amps
@@ -194,7 +201,7 @@ suspend fun ChargePointConnectorDAO.setMaxVehicleRate(
 }
 
 suspend fun ChargePointConnectorDAO.setNumberPhases(
-    numberPhases: Int
+    numberPhases: Int,
 ) {
     transaction {
         this@setNumberPhases.vehicleNumberPhases = numberPhases

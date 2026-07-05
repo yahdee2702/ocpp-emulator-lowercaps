@@ -1,9 +1,10 @@
 plugins {
-    kotlin("multiplatform") version "2.1.10" apply false
-    id("org.jetbrains.compose") version "1.7.3" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10" apply false
-    id("org.jlleitschuh.gradle.ktlint") version "12.2.0" apply false
-    id("com.google.devtools.ksp") version "2.1.10-1.0.31" apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.compose) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kover) apply false
 }
 
 allprojects {

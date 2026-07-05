@@ -2,17 +2,18 @@ package com.monta.ocpp.emulator.chargepoint.service
 
 import com.monta.ocpp.emulator.chargepoint.entity.ChargePointDAO
 import com.monta.ocpp.emulator.chargepoint.exception.ChargePointNotFoundException
+import com.monta.ocpp.emulator.chargepoint.model.MeterType
 import com.monta.ocpp.emulator.chargepoint.repository.ChargePointRepository
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.koin.core.annotation.Singleton
+import javax.inject.Singleton
 
 @Singleton
 class ChargePointService(
-    private val chargePointRepository: ChargePointRepository
+    private val chargePointRepository: ChargePointRepository,
 ) {
 
     fun getById(
-        id: Long
+        id: Long,
     ): ChargePointDAO = transaction {
         val chargePoint = chargePointRepository.getById(id)
         if (chargePoint == null) throw ChargePointNotFoundException()
@@ -20,7 +21,7 @@ class ChargePointService(
     }
 
     fun getByIdentity(
-        identity: String
+        identity: String,
     ): ChargePointDAO = transaction {
         val chargePoint = chargePointRepository.getByIdentity(identity)
         if (chargePoint == null) throw ChargePointNotFoundException()
@@ -35,7 +36,8 @@ class ChargePointService(
         apiUrl: String,
         firmware: String,
         maxKw: Double,
-        connectorCount: Int
+        connectorCount: Int,
+        meterType: MeterType,
     ): ChargePointDAO {
         return transaction {
             // Initialize our charge point
@@ -46,7 +48,8 @@ class ChargePointService(
                 ocppUrl = ocppUrl,
                 apiUrl = apiUrl,
                 firmware = firmware,
-                maxKw = maxKw
+                maxKw = maxKw,
+                meterType = meterType,
             )
             // Initialize our connectors
             for (connectorId in 1..connectorCount) {
@@ -65,7 +68,7 @@ class ChargePointService(
 
     fun update(
         chargePoint: ChargePointDAO,
-        block: ChargePointDAO.() -> Unit
+        block: ChargePointDAO.() -> Unit,
     ): ChargePointDAO {
         return transaction {
             block(chargePoint)
